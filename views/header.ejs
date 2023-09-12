@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+</head>
+
+<body>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <nav class="navbar navbar-light bg-primary fixed-top d-flex" data-bs-theme="dark">
+        <div class="container" >
+            <a class="navbar-brand" href="/">
+            <img src="/image/adicartbliss-new.png" width="140" height="35">
+            </a>
+            <div class="row align-items-start ">
+
+                <div class="col">
+                    <a class="nav-link active text-light" href="/aboutUs">About</a>
+
+                </div>
+                <div class="col">
+                    <a class="nav-link active text-light" href="/contact">Contact</a>
+                </div>
+                <div class="col">
+                    <a class="nav-link active text-light" href="/shoppingCart">Cart</a>
+                </div>
+
+                <div class="dropdown">
+                    <a class="btn text-light dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        Menu
+                    </a>
+
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" id="dashboard"> Dashboard</a></li>
+                        <li><a class="dropdown-item" href="/userProfile">My Profile</a></li>
+                        <li><a class="dropdown-item" href="/orderHistory">Order History</a></li>
+                        <li><a class="dropdown-item" href="/terms&policy">Terms & Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <form class="d-flex" role="search">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-dark" type="submit" id="search">Search</button>
+            </form>
+        </div>
+    </nav>
+
+    <!-- <div class="row" id="product"></div> -->
+     
+    <script>
+        document.getElementById('dashboard').addEventListener('click', function dashboard() {
+            
+            fetch('/profile')
+                .then(response => {
+                    if (response.status == 440) {
+                        console.log("From 440");
+                        window.location.href = '/login';
+                    }
+                    else {
+                        return response.json();
+                    }
+                })
+                .then(profileData => {
+                    if (profileData.userType == 'Seller') {
+                        console.log("Seller Dashboard");
+                        window.location.href = '/sellerDashboard';
+                    } else {
+                        console.log("Buyer Dashboard");
+                        window.location.href = '/buyerDashboard';
+                    }
+                })
+        })
+
+
+        document.getElementById('search').addEventListener('click', function search(data) {
+            event.preventDefault(); // Prevent the form from submitting and page reload
+
+            const searchData = document.querySelector('input[type="search"]').value;
+                console.log(searchData);
+            fetch('/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({name:searchData})
+            })
+                .then(response => {
+                    if (response.status == 440) {
+                        console.log("From 440");
+                        window.location.href = '/login';
+                    }
+                    else {
+                        return response.json();
+                    }
+                })
+       .then(result => {
+            console.log("dooom dooom duma re=====>",result[0].item);
+            // Check if the received HTML data is not empty
+            if (result[0] !== '') {
+                console.log("Seller Dashboard");
+                // Insert the HTML data into the current page
+                const productCard = document.createElement('div');
+                productCard.classList.add('col-md-3', 'product-card', 'm-3','text-center');
+    productCard.innerHTML = `
+        <image src=${result[0].item.image} height='100px' width='100px'>
+        <h3>${result[0].item.name}</h3>
+        <p>${result[0].item.description}</p>   
+        <p>Price: $${result[0].item.price}</p>
+        <button class="btn btn-primary" onClick="addCart('${result[0]._id}')" >Add to Cart</button>
+    `;
+
+    const productContainer = document.getElementById('product-container');
+    productContainer.innerHTML='';
+                productContainer.appendChild(productCard)
+
+                // document.body.innerHTML = htmlData;
+            } 
+        })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+
+        })
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Custom CSS */
+        .shopping-cart {
+            padding: 50px;
+        }
+
+        .cart-item {
+            border: 1px solid #e1e1e1;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .cart-item h3 {
+            margin-top: 0;
+        }
+        .hoverable-div:hover {
+            /* background-color: rgb(5, 3, 3); */
+            border: 2px solid #0f0e0e;
+            box-shadow: 7px 7px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Add more custom styles as needed */
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <%- include('header.ejs') %>
+
+   
+    <!-- Shopping Cart -->
+    <div class="shopping-cart mt-5">
+        <div class="container" id="product-container">
+            <h2>Shopping Cart</h2>
+
+            <!-- Cart Items -->
+
+
+
+        </div>
+        <div class="text-right ">
+            <h4 id="price">Total: </h4>
+            <!-- Checkout Button -->
+            <button class="btn btn-primary"  id="checkOutbtn" onclick="checkOut()">Proceed to Checkout</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2023 Adiyogi-Services</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Make an HTTP GET request to the backend API endpoint
+            fetch('/cart')
+                .then(response => {
+                    console.log(response);
+                    if(response.status==440){
+                        console.log("From 440");
+                        window.location.href = '/login';
+                    }
+                   else if (!response.status==200) {
+                        window.alert("Failed to load");
+                    }
+                    return response.json();
+                })
+                .then(productData => {
+                    console.log(productData);
+                    let price = 0;
+
+                    productData.productId._id.forEach((product) => {
+                        price = price + product.price;
+                        const productCard = createProductCard(product);
+                        const productContainer = document.getElementById('product-container');
+                        productContainer.appendChild(productCard);
+                    });
+
+                    const totalPrice = document.getElementById('price');
+                    totalPrice.textContent = `Total Price:  $${price}`;
+                })
+                .catch(error => {
+                    console.log('There was a problem with the fetch operation:', error);
+                });
+
+        });
+
+        function createProductCard(product) {
+
+            // Create HTML elements for the product card and populate them with data
+            const productCard = document.createElement('div');
+            productCard.classList.add('cart-item','hoverable-div');
+            productCard.innerHTML = `
+        <h3>${product.name}</h3>
+        <p>${product.description}</p>
+        <p>Price: $${product.price}</p>
+        <button class="btn btn-danger" onClick="remove('${product._id}')" >Remove</button>
+
+    `;
+            return productCard;
+        }
+
+        // remove from cart....
+        function remove(product) {
+            event.preventDefault();
+            console.log("F!@!@!@!@==>>", product);
+
+            // Make an HTTP POST request to your API endpoint
+            fetch('/removeFromCart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ product })
+            })
+                .then(response => {
+                    console.log(response);
+                    if (!response.ok) {
+
+                        window.alert("Failed to remove");
+                        ;
+                    }
+                    else {
+                        window.alert("Removed Successfully !!");
+                    }
+                })
+
+        }
+
+
+        function checkOut() {
+            const myButton = document.getElementById('checkOutbtn');
+            myButton.disabled = true;
+
+            event.preventDefault();
+            fetch('/checkOut', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+
+            })
+
+                .then(response => {
+                    if (!response.ok) {
+                        window.alert("Failed to checkOut !!");
+                    }
+                    return response.json(); 
+                })
+                .then(data => {
+                    // Handle the data received from the server
+                    window.location.href = data.url;
+
+                    // You can manipulate or display the data here
+                })
+        }
+    </script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"
+        integrity="sha384-Rx+T1VzGupg4BHQYs2gCW9It+akI2MM/mndMCy36UVfodzcJcF0GGLxZIzObiEfa"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
