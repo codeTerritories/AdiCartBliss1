@@ -32,7 +32,7 @@ module.exports={
           });
           
           var mailOptions = {
-            from: `d.adiyogi21@gmail.com`,
+            from: `xxxxx@gmail.com`,
             to: email,
             subject: subject,
             html: html
