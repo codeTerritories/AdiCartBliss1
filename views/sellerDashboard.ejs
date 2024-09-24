@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .dashboard {
+            padding: 50px;
+        }
+
+        .product-card {
+            border: 1px solid #282222;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            max-width: 22rem;
+
+        }
+
+        .product-card h3 {
+            margin-top: 0;
+        }
+
+        .chat-button {
+            position: fixed;
+            bottom: 50px;
+            right: 50px;
+            background-color: #06ff5d;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .popup-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+
+        .btn2 {
+            max-height: 30px;
+            margin-top: 21rem;
+            border-radius: 5px;
+        }
+
+        .hoverable-div:hover {
+            background-color: rgb(5, 3, 3);
+            border: 2px solid #ccc;
+            box-shadow: 7px 7px 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-light bg-primary fixed-top d-flex" data-bs-theme="dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/image/adicartbliss-new.png" width="140" height="35">
+            </a>
+            <div class="row align-items-start ">
+
+                <div class="col">
+                    <a class="nav-link active text-light" href="/aboutUs">About</a>
+
+                </div>
+                <div class="col">
+                    <a class="nav-link active text-light" href="/contact">Contact</a>
+                </div>
+                <div class="dropdown">
+                    <a class="btn text-light dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        Menu
+                    </a>
+
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/sellerDashboard"> Dashboard</a></li>
+                        <li><a class="dropdown-item" href="/userProfile">My Profile</a></li>
+                        <li><a class="dropdown-item" href="/terms&policy">Terms & Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <form class="d-flex " role="search">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-dark" id="search" type="submit">Search</button>
+            </form>
+        </div>
+    </nav>
+
+    <!-- Seller Dashboard -->
+    <div class="dashboard mt-5 d-flex justify-content-center align-items-center">
+        <div class="container">
+            <h2 id="welcome-message">Welcome, [Seller Name]</h2>
+            <p>Your Dashboard</p>
+
+            <!-- Product Listings -->
+            <div class="row text-center" id="product-container">
+
+
+            </div>
+
+            <!-- Add Product Button -->
+            <button class="addProduct btn btn-success" onclick="openPopup()">Add Product</button>
+
+            <!-- Popup container -->
+            <div id="popup" class="popup-container mt-5">
+                <div class="popup-content d-flex justify-content-center ">
+                    <!-- <h2>Add Product</h2> <br>    -->
+                    <!-- Form to add a product -->
+                    <form method="post">
+                        <div class="form-colomn">
+
+                            <div class="form-group">
+                                <label for="productName">Product Name:</label>
+                                <input type="text" id="productName" name="productName" required><br>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="productDescription">Description:</label>&nbsp;&nbsp;&nbsp;
+                                <textarea id="productDescription" name="productDescription" maxlength="45" rows="4"
+                                    required></textarea><br>
+                            </div>
+                            <div class="form_group">
+                                <label for="productPrice">Price:</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                <input type="number" id="productPrice" name="productPrice" required>
+
+                                <label for="quantity">Quantity:</label>
+                                <input type="number" id="quantity" name="quantity" required><br>
+                            </div>
+                            <div class="form-group">
+                                <label for="image">Select an Image:</label>
+                                <input type="file" class="form-control-file" id="image" name="image">
+                                <img src="#" alt="Preview" id="imagePreview" class="mt-2 img-thumbnail"
+                                    style="max-width: 200px;">
+                            </div>
+
+
+
+                            <button id="addProductButton" class="btn btn-primary" type="submit">Add</button>
+                        </div>
+                    </form>
+                    <button id="addProductButton" class=" btn2 btn-secondary" onclick="closePopup()">back</button>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <a class="chat-button" href="/messaging">
+        <img src="/image/chat.png" alt="Chat" width="20" height="20">
+        <b>Live Chat </b>
+    </a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2023 Adiyogi-Services</p>
+        </div>
+    </footer>
+
+
+    <script>
+
+// content loaded on the page...................................................
+        document.addEventListener('DOMContentLoaded', () => {
+            // Make an HTTP GET request to the backend API endpoint
+            fetch('/sellerDashboards')
+                .then(response => {
+                    console.log(response);
+                    if (response.status == 440) {
+                        console.log("From 440");
+                        window.location.href = '/login';
+                    }
+                    else {
+                        return response.json();
+                    }
+                })
+                .then(productData => {
+                    const welcomeMessage = document.getElementById('welcome-message');
+                    welcomeMessage.textContent = `Welcome, ${productData.name}`;
+                    productData.docs.forEach((product) => {
+                        const productCard = createProductCard(product);
+                        const productContainer = document.getElementById('product-container');
+                        productContainer.appendChild(productCard);
+                    });
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                });
+
+        });
+
+
+        function createProductCard(product) {
+            // Create HTML elements for the product card and populate them with data
+            const productCard = document.createElement('div');
+            productCard.classList.add('col-md-4', 'product-card', 'm-1', 'bg-secondary', 'hoverable-div');
+            productCard.innerHTML = `
+        <img src=${product.image} height="150px" width="150px">
+        <h5>${product.name}</h5>
+        <p>${product.description}</p>
+        <p>Price: $${product.price}</p>
+        <button class="btn btn-primary" >Edit</button>
+        <button class="btn btn-danger" onClick="deleteProduct('${product._id}')">Delete</button><br>
+        <b class="quantity mt-2">Available Stock: ${product.quantity}</b>
+    `;
+            const quantityElement = productCard.querySelector('.quantity');
+            // console.log(product.quantity);
+            if(product.quantity==0){
+                quantityElement.classList.add('text-danger');   
+                quantityElement.innerHTML='OUT OF STOCK';
+            }
+            else if (product.quantity <= 3) {
+                console.log("From display block");
+                quantityElement.classList.add('text-success');   
+                quantityElement.style.display = "block";
+            } else if(product.quantity > 3) {
+                console.log("From display none");
+                quantityElement.style.display = "none";
+
+            }
+
+            return productCard;
+        }
+
+
+
+
+        // Function to open the popup
+        function openPopup() {
+            document.getElementById('popup').style.display = 'block';
+        }
+
+        // Function to close the popup
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+            window.location.href = '/sellerDashboard';
+        }
+        // Function to add a product
+        function addProduct() {
+            event.preventDefault();
+            console.log("From add product");
+            const myButton = document.getElementById('addProductButton');
+            myButton.disabled = true;
+
+            const productName = document.getElementById('productName').value;
+            const productDescription = document.getElementById('productDescription').value;
+            const productPrice = document.getElementById('productPrice').value;
+            const productQuantity = document.getElementById('quantity').value;
+            const imageFile = document.getElementById('image').files[0];
+            // console.log("======>?:<>>>>",productName,productDescription,productPrice);
+
+
+            const formData = new FormData();
+            if (imageFile) {
+                console.log("image", imageFile);
+                formData.append('image', imageFile);
+            }
+            if (productName) {
+                formData.append('name', productName);
+            }
+            if (productDescription) {
+                formData.append('description', productDescription);
+            }
+            if (productPrice) {
+                formData.append('price', productPrice);
+            }
+            formData.append('quantity', productQuantity);
+
+            console.log(formData);
+
+            // Make an HTTP POST request to your API endpoint
+            fetch('/addProduct', {
+                method: 'POST',
+                body: formData
+            }).then(response => {
+                if (response.status == 440) {
+                    console.log("From 440");
+                    window.location.href = '/login';
+                }
+                else {
+
+                    window.alert("product Added !!");
+                    closePopup();
+                }
+
+            })
+
+        }
+
+        // Add an event listener to the "Add Product" button
+        document.getElementById('addProductButton').addEventListener('click', addProduct);
+
+        // function to delte product..
+        function deleteProduct(id) {
+            console.log("sjddj==>>>", id);
+            fetch('/deleteProduct', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id })
+            })
+                .then((response) => {
+                    if (response.status == 440) {
+                        console.log("From 440");
+                        window.location.href = '/login';
+                    }
+                    else if (response.status == 200) {
+                        window.alert("Deleted Success");
+                        window.location.href = '/sellerDashboard';
+
+                    } else {
+                        window.alert("Somehting went wrong");
+                    }
+                })
+
+        }
+
+        // Preview uploaded image
+        document.getElementById('image').addEventListener('change', function (e) {
+            const imagePreview = document.getElementById('imagePreview');
+            const file = e.target.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    imagePreview.src = reader.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+
+        // search product ..............................................
+
+        document.getElementById('search').addEventListener('click', function search(data) {
+            event.preventDefault(); // Prevent the form from submitting and page reload
+
+            const searchData = document.querySelector('input[type="search"]').value;
+                console.log(searchData);
+            fetch('/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({name:searchData})
+            })
+                .then(response => {
+                    if (response.status == 440) {
+                        console.log("From 440");
+                        window.location.href = '/login';
+                    }
+                    else {
+                        return response.json();
+                    }
+                })
+       .then(result => {
+            console.log("dooom dooom duma re=====>",result[0].item);
+            // Check if the received HTML data is not empty
+            if (result[0] !== '') {
+                console.log("Seller Dashboard");
+                // Insert the HTML data into the current page
+                const productCard = document.createElement('div');
+                productCard.classList.add('col-md-3', 'product-card', 'm-3','text-center');
+    productCard.innerHTML = `
+        <image src=${result[0].item.image} height='100px' width='100px'>
+        <h3>${result[0].item.name}</h3>
+        <p>${result[0].item.description}</p>   
+        <p>Price: $${result[0].item.price}</p>
+        <button class="btn btn-primary" onClick="addCart('${result[0]._id}')" >Add to Cart</button>
+    `;
+
+    const productContainer = document.getElementById('product-container');
+    productContainer.innerHTML='';
+                productContainer.appendChild(productCard)
+
+                // document.body.innerHTML = htmlData;
+            } 
+        })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+
+        })
+    </script>
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"
+        integrity="sha384-Rx+T1VzGupg4BHQYs2gCW9It+akI2MM/mndMCy36UVfodzcJcF0GGLxZIzObiEfa"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

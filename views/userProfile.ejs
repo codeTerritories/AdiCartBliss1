@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Custom CSS */
+        body {
+            user-select: none;
+        }
+
+
+        .main {
+            overflow-x: hidden;
+        }
+
+        .user-profile {
+            padding: 50px;
+        }
+
+        .content {
+            background-color: grey;
+            width: inherit;
+        }
+
+        .profile-picture {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-top: 50px;
+            margin-left: 7rem;
+            /* margin-bottom: 20px; */
+            border: 5px solid rgba(0, 0, 0, 0.774);
+        }
+
+        .image-div {
+            background-image: url("https://thumbs.dreamstime.com/b/incredibly-beautiful-sunset-sun-lake-sunrise-landscape-panorama-nature-sky-amazing-colorful-clouds-fantasy-design-115177001.jpg");
+            background-repeat: no-repeat;
+            background-size: cover;
+            height: 200px;
+            border-bottom: 2px solid rgba(16, 14, 14, 0.778);
+
+        }
+
+        .secondDiv {
+            margin-top: 5rem;
+            margin-left: 40rem;
+
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-light bg-primary fixed-top d-flex" data-bs-theme="dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="/image/adicartbliss-new.png " width="140" height="35">
+            </a>
+            <div class="row align-items-start ">
+
+                <div class="col">
+                    <a class="nav-link active text-light" href="/aboutUs">About</a>
+
+                </div>
+                <div class="col">
+                    <a class="nav-link active text-light" href="/contact">Contact</a>
+                </div>
+                <div class="col">
+                    <a class="nav-link active text-light" href="/shoppingCart">Cart</a>
+                </div>
+
+                <div class="dropdown">
+                    <a class="btn text-light dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                        Menu
+                    </a>
+
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" onclick=dashboard()> Dashboard</a></li>
+                        <li><a class="dropdown-item" href="/userProfile">My Profile</a></li>
+                        <li><a class="dropdown-item" href="/terms&policy">Terms & Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <button class="btn btn-outline-dark" onclick=signOut()>Sign-Out</button>
+        </div>
+    </nav>
+
+    <!-- User Profile Page -->
+
+    <div class="container-fluid main mt-5  ">
+
+        <!-- <div class="container-fluid bg-secondary  text-center" id="profile-container"> -->
+        <!-- <h3 class="mb-5">Profile</h3> -->
+
+        <div class="row d-flex  ">
+            <div class="col-md-12 image-div">
+
+                <img src="" alt="Profile Picture" class="profile-picture" id="profile-picture">
+            </div>
+
+
+            <div class="col-md-12 secondDiv ">
+                <p><strong>Name:</strong> <span id="profile-name"></span></p>
+                <p><strong>Email:</strong> <span id="profile-email"></span></p>
+                <p><strong>Joined:</strong> <span id="profile-joined"></span></p>
+                <a href="#" class="btn btn-primary mt-5 " onClick="editProfile()">Edit Profile</a>
+            </div>
+        </div>
+
+
+
+
+
+        <!-- </div> -->
+
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2023 Adiyogi-Services</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Make an HTTP GET request to the backend API endpoint
+            fetch('/profile')
+                .then(response => {
+                    if (response.status == 440) {
+                        console.log("From 440");
+                        window.location.href = '/login';
+                    }
+                    else {
+                        return response.json();
+                    }
+                })
+                .then(profile => {
+                    console.log(profile);
+                    // const productCard = createProfile(profileData);
+                    const profileContainer = document.getElementById('profile-container');
+                    // profileContainer.appendChild(productCard);
+
+                    const date = new Date(profile.createdAt);
+                    const formattedDate = date.toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour12: true // Use 12-hour format with AM/PM
+                    });
+
+                    document.getElementById('profile-picture').src = profile.photo;
+                    document.getElementById('profile-name').textContent = profile.name;
+                    document.getElementById('profile-email').textContent = profile.email;
+                    document.getElementById('profile-joined').textContent = formattedDate;
+
+
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                });
+
+        });
+
+        //     function createProfile(profile) {
+        //         console.log("----->>>", profile);
+        //         const profileCard = document.createElement('div');
+        //         // productCard.classList.add('col-md-6 d-flex');
+        //         profileCard.innerHTML = `
+        // <div class="row d-flex justify-content-center align-items-center">
+        // <div class="col-md-6"> 
+        //     <img src=${profile.photo} alt="Profile Picture" class="profile-picture">
+        // </div>
+        // <div class="col-md-6 mt-3">
+        // <p><strong>Name:</strong>   ${profile.name}</p>
+        // <p><strong>Email:</strong> ${profile.email}</p>
+        // <p><strong>Joined:</strong> ${profile.createdAt}</p>
+        // </div>
+        // <a href="#" class="btn btn-primary m-5 " onClick=editProfile()>Edit Profile</a>
+        // `;
+        //         return profileCard;
+
+        //     }
+
+        function signOut() {
+            fetch('/logOut')
+                .then(response => {
+                    console.log("Success");
+                    window.location.href = '/login';
+                })
+        }
+
+        //    ....open buyer Dashboard / seller Dashboard.......
+        function dashboard() {
+            fetch('/profile')
+                .then(response => {
+                    if (response.status == 440) {
+                        console.log("From 440");
+                        window.location.href = '/login';
+                    }
+                    else {
+                        return response.json();
+                    }
+                })
+                .then(profileData => {
+                    if (profileData.userType == 'Seller') {
+                        console.log("Seller Dashboard");
+                        window.location.href = '/sellerDashboard';
+                    } else {
+                        console.log("Buyer Dashboard");
+                        window.location.href = '/buyerDashboard';
+                    }
+                })
+        }
+
+
+        function editProfile() {
+            window.location.href = '/editProfile';
+        }
+
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"
+        integrity="sha384-Rx+T1VzGupg4BHQYs2gCW9It+akI2MM/mndMCy36UVfodzcJcF0GGLxZIzObiEfa"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

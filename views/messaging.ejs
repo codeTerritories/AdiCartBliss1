@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messaging</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+
+    <style>
+        /* Custom CSS */
+        .messaging {
+            padding: 50px;
+        }
+
+        .message-container {
+            border: 1px solid #e1e1e1;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            height: 15rem;
+        }
+
+        .message-container h4 {
+            margin-top: 0;
+        }
+
+        .message {
+            height: 200px;
+            width: 15rem;
+            overflow: auto;
+
+        }
+        .msg{
+            background-color: antiquewhite;
+            border-radius: 20%;
+            max-width: 50%;
+            height: 30px;
+            padding: 2px;
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <%- include('header.ejs') %>
+
+
+        <!-- Messaging Page -->
+        <div class="messaging mt-5">
+            <div class="container ">
+                <h2>Chat Room</h2>
+                <p>Connect with all active user</p>
+
+                <!-- Message Thread -->
+                <div class="message-container d-flex justify-content-center align-items-center">
+                    <div class="message" id="messages">
+
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" class="form-control" id="messageInput" placeholder="Type your message...">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" type="button" id="sendButton">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <p>&copy; 2023 Adiyogi-Services</p>
+            </div>
+        </footer>
+        <script>
+            let userName = null;
+            fetch('/profile')
+                .then(response => {
+                    console.log(response);
+                    if (response.status == 440) {
+                        console.log("From 440");
+                        window.location.href = '/login';
+                    }
+                    else {
+                        return response.json();
+                    }
+                })
+                .then(userData => {
+                    userName = userData.name;
+                    // console.log(userName);
+                })
+
+            const socket = io();
+
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const messagesContainer = document.getElementById('messages');
+            // emit message 
+            sendButton.addEventListener('click', () => {
+                const user = {
+                    message: messageInput.value,
+                    name: userName
+                }
+                console.log(user);
+                if (user.message !== '') {
+                    socket.emit('chatMessage', user);
+                    messageInput.value = '';
+                }
+            });
+            messageInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    const user = {
+                        message: messageInput.value,
+                        name: userName
+                    }
+                    // const message = messageInput.value.trim();
+                    if (user.message !== '') {
+                        event.preventDefault();
+                        socket.emit('chatMessage', user);
+                        messageInput.value = '';
+                    }
+                }
+            });
+
+
+
+            socket.on('chatMessage', (data) => {
+                console.log(data);
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('msg');
+                messageElement.textContent = `${data.text.name}: ${data.text.message}`;
+               
+                messagesContainer.appendChild(messageElement);
+            });
+
+        </script>
+        <!-- Bootstrap JS -->
+
+
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+            crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"
+            integrity="sha384-Rx+T1VzGupg4BHQYs2gCW9It+akI2MM/mndMCy36UVfodzcJcF0GGLxZIzObiEfa"
+            crossorigin="anonymous"></script>
+</body>
+
+</html>

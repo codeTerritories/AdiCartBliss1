@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buyer Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Custom CSS */
+        .dashboard {
+            padding: 50px;
+        }
+
+        .product-card {
+            border: 1px solid #3a3131;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: blanchedalmond;
+            max-width: 22rem;
+
+        }
+
+        .product-card h3 {
+            margin-top: 0;
+        }
+
+        .chat-button {
+            position: fixed;
+            bottom: 50px;
+            right: 50px;
+            background-color: #06ff72;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .hoverable-div:hover {
+
+            background-color: rgb(125, 217, 130);
+            border: 2px solid #ccc;
+            box-shadow: 7px 7px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .rotate {
+            /* display: none; */
+            transition: transform 0.5s;
+        }
+
+        .rotate-active {
+            transform: rotateY(180deg);
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <%- include('header.ejs') %>
+
+        <!-- Buyer Dashboard -->
+        <div class="dashboard mt-5">
+            <div class="container">
+                <h2 id="welcome-message">Welcome, [Buyer Name]</h2>
+                <p>Your Dashboard</p>
+
+                <div class="row" id="product"></div>
+
+                <!-- Product Listings -->
+                <div class="row text-center" id="product-container">
+
+                    <a class="chat-button" href="/messaging">
+                        <img src="/image/chat.png" alt="Chat" width="20" height="20">
+                        <b>Live Chat </b>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <p>&copy; 2023 Adiyogi-Services</p>
+            </div>
+        </footer>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // Make an HTTP GET request to the backend API endpoint
+                fetch('/buyerDashboards')
+                    .then(response => {
+                        console.log(response);
+                        if (response.status == 440) {
+                            console.log("From 440");
+                            window.location.href = '/login';
+                        }
+                        else {
+                            return response.json();
+                        }
+                    })
+                    .then(productData => {
+                        const welcomeMessage = document.getElementById('welcome-message');
+                        welcomeMessage.textContent = `Welcome, ${productData.userName}`;
+                        productData.docs.forEach((product) => {
+                            const productCard = createProductCard(product);
+                            const productContainer = document.getElementById('product-container');
+                            productContainer.appendChild(productCard);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('There was a problem with the fetch operation:', error);
+                    });
+
+            });
+
+            let productId = '';
+            function createProductCard(product) {
+                productId = product;
+                console.log("______---------->>>>>>>", productId._id);
+                const productCard = document.createElement('div');
+                productCard.classList.add('col-md-4', 'product-card', 'm-2', 'hoverable-div');
+                productCard.innerHTML = `
+    <img src=${product.image} height="150px" width="150px">
+        <h5>${product.name}</h5>
+        <p>${product.description}</p>   
+        <p>Price: $${product.price}</p>
+        <button class="btn btn-primary" onClick="addCart('${product._id}')" >Add to Cart</button>
+        <div class="rotate">Additional Content Goes Here</div>
+        <b class="quantity mt-2">Available Stock: ${product.quantity}</b>
+    `;
+            const quantityElement = productCard.querySelector('.quantity');
+            // console.log(product.quantity);
+            if(product.quantity<=0){
+                quantityElement.classList.add('text-danger');   
+                quantityElement.innerHTML='OUT OF STOCK';
+            }
+            else if (product.quantity <= 3) {
+                console.log("From display block");
+                quantityElement.classList.add('text-success');   
+                quantityElement.style.display = "block";
+            } else if(product.quantity > 3) {
+                console.log("From display none");
+                quantityElement.style.display = "none";
+
+            }
+
+         
+                productCard.addEventListener('click', () => {
+                    flipProductCard(productCard); // Call the new function to toggle the class
+                });
+                return productCard;
+            }
+
+            function addCart(product) {
+                event.preventDefault();
+                console.log("From add Cart client side", product);
+
+                // Make an HTTP POST request to your API endpoint
+                fetch('/addToCart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ product })
+                }).then(response => {
+                    console.log(response);
+                    if (response.status == 440) {
+                        console.log("From 440");
+                        window.location.href = '/login';
+                    }
+                    else if (!response.ok) {
+                        window.alert("Failed to Add to Cart");
+                    } else {
+                        window.alert("Added successfull !!");
+                    }
+                })
+
+            }
+
+            function flipProductCard(productCard) {
+                // productCard.style.display = 'none';
+                const rotateDiv = productCard.querySelector('.rotate');
+                if (rotateDiv) {
+                    rotateDiv.classList.toggle('rotate-active');
+                }
+                
+                // Show the product card again (you can set its display property to "block" or any other suitable value)
+                // productCard.style.display = 'block';
+                // productCard.innerHTML='';
+            }
+
+
+        </script>
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+            crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"
+            integrity="sha384-Rx+T1VzGupg4BHQYs2gCW9It+akI2MM/mndMCy36UVfodzcJcF0GGLxZIzObiEfa"
+            crossorigin="anonymous"></script>
+</body>
+
+</html>
